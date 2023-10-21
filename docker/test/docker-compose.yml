@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  test-app:
+    build: .
+    depends_on:
+      test-db:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "4000:4000"
+    networks:
+      - network
+    volumes:
+      - ./:/app
+
+  test-db:
+    image: postgres:alpine
+    container_name: desafio-oinc-test-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
+    networks:
+      - app-network
+    volumes:
+      - .docker/pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app-network:
+    driver: bridge
